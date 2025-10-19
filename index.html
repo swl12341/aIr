@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>冰脉回航：Echo of the Last Sky</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- 启动界面 -->
+        <div id="start-screen" class="screen active">
+            <div class="title-container">
+                <h1 class="game-title">冰脉回航</h1>
+                <h2 class="game-subtitle">Echo of the Last Sky</h2>
+                <p class="game-description">通过体感操作，启动地球的重启信标</p>
+                <button id="start-btn" class="start-button">开始任务</button>
+            </div>
+        </div>
+
+        <!-- 游戏界面 -->
+        <div id="game-screen" class="screen">
+            <!-- HUD界面 -->
+            <div id="hud">
+                <div class="hud-item">
+                    <span class="hud-label">任务进度</span>
+                    <div class="progress-bar">
+                        <div id="progress-fill" class="progress-fill"></div>
+                    </div>
+                </div>
+                <div class="hud-item">
+                    <span class="hud-label">能量</span>
+                    <div id="energy-level" class="energy-bar">
+                        <div id="energy-fill" class="energy-fill"></div>
+                    </div>
+                </div>
+                <div class="hud-item">
+                    <span class="hud-label">分数</span>
+                    <span id="score" class="score">0</span>
+                </div>
+        <div class="hud-item">
+            <span class="hud-label">难度</span>
+            <span id="difficulty" class="difficulty">1</span>
+        </div>
+        <div class="hud-item">
+            <span class="hud-label">时间</span>
+            <span id="timer" class="timer">00:00</span>
+        </div>
+        <div class="hud-item">
+            <span class="hud-label">模式</span>
+            <span id="mirror-status" class="mirror-status" title="按M键切换">✅ 镜像</span>
+        </div>
+            </div>
+
+            <!-- 任务提示 -->
+            <div id="task-prompt" class="task-prompt">
+                <p id="prompt-text">请将手伸向屏幕启动飞船</p>
+                <div id="gesture-status" class="gesture-status">
+                    <span id="hand-detection">手部检测: 未检测到</span>
+                    <span id="pose-detection">姿态检测: 未检测到</span>
+                </div>
+            </div>
+
+            <!-- 游戏画布 -->
+            <canvas id="game-canvas"></canvas>
+            
+            <!-- 摄像头画面 -->
+            <div id="camera-container">
+                <video id="camera-video" autoplay muted playsinline webkit-playsinline></video>
+                <canvas id="camera-canvas"></canvas>
+            </div>
+
+            <!-- 粒子效果容器 -->
+            <div id="particles-container"></div>
+        </div>
+
+        <!-- 结算界面 -->
+        <div id="result-screen" class="screen">
+            <div class="result-container">
+                <h2 class="result-title">任务完成</h2>
+                <div class="result-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">完成时间</span>
+                        <span id="final-time" class="stat-value">00:00</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">能量效率</span>
+                        <span id="energy-efficiency" class="stat-value">100%</span>
+                    </div>
+                </div>
+                <button id="restart-btn" class="restart-button">重新开始</button>
+            </div>
+        </div>
+
+        <!-- 暂停界面 -->
+        <div id="pause-screen" class="screen">
+            <div class="pause-container">
+                <h2 class="pause-title">游戏暂停</h2>
+                <button id="resume-btn" class="resume-button">继续游戏</button>
+                <button id="main-menu-btn" class="main-menu-button">返回主菜单</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 加载MediaPipe -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js"></script>
+    
+    <!-- 游戏脚本 -->
+    <script src="js/gesture-recognition.js"></script>
+    <script src="js/particle-system.js"></script>
+    <script src="js/game-engine.js"></script>
+    <script src="js/audio-manager.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

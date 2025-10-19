@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>摄像头测试 - 冰脉回航</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #00d4ff;
+            margin-bottom: 30px;
+        }
+        
+        .camera-container {
+            position: relative;
+            width: 640px;
+            height: 480px;
+            margin: 20px auto;
+            border: 3px solid rgba(0, 212, 255, 0.6);
+            border-radius: 15px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.9);
+        }
+        
+        #camera-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
+        
+        #camera-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            transform: scaleX(-1);
+        }
+        
+        .status {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            margin: 20px 0;
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .status-label {
+            color: #aaa;
+            font-weight: bold;
+        }
+        
+        .status-value {
+            color: #00d4ff;
+            font-weight: bold;
+        }
+        
+        .status-value.success {
+            color: #00ff44;
+        }
+        
+        .status-value.error {
+            color: #ff4444;
+        }
+        
+        .test-button {
+            background: linear-gradient(45deg, #00d4ff, #0099cc);
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            color: white;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+        
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 212, 255, 0.4);
+        }
+        
+        .test-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        
+        .instructions {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .instructions h3 {
+            color: #00d4ff;
+            margin-bottom: 15px;
+        }
+        
+        .instructions ol {
+            color: #aaa;
+            line-height: 1.6;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎥 摄像头测试</h1>
+        
+        <div class="camera-container">
+            <video id="camera-video" autoplay muted playsinline></video>
+            <canvas id="camera-canvas"></canvas>
+        </div>
+        
+        <div class="status">
+            <div class="status-item">
+                <span class="status-label">摄像头状态</span>
+                <span id="camera-status" class="status-value error">未启动</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">权限状态</span>
+                <span id="permission-status" class="status-value error">未检查</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">视频尺寸</span>
+                <span id="video-size" class="status-value">未知</span>
+            </div>
+        </div>
+        
+        <button id="start-camera" class="test-button">启动摄像头</button>
+        <button id="stop-camera" class="test-button" disabled>停止摄像头</button>
+        
+        <div class="instructions">
+            <h3>测试说明</h3>
+            <ol>
+                <li>点击"启动摄像头"按钮</li>
+                <li>允许浏览器访问摄像头权限</li>
+                <li>观察摄像头画面是否正常显示</li>
+                <li>检查状态显示是否正常</li>
+                <li>如果一切正常，可以开始游戏</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        let video = null;
+        let canvas = null;
+        let ctx = null;
+        let isCameraRunning = false;
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            video = document.getElementById('camera-video');
+            canvas = document.getElementById('camera-canvas');
+            ctx = canvas.getContext('2d');
+            
+            // 设置画布尺寸
+            canvas.width = 640;
+            canvas.height = 480;
+            
+            // 事件监听器
+            document.getElementById('start-camera').addEventListener('click', startCamera);
+            document.getElementById('stop-camera').addEventListener('click', stopCamera);
+        });
+        
+        // 启动摄像头
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        width: 640, 
+                        height: 480,
+                        facingMode: 'user'
+                    } 
+                });
+                
+                video.srcObject = stream;
+                video.play();
+                
+                isCameraRunning = true;
+                updateStatus('camera-status', '已启动', 'success');
+                updateStatus('permission-status', '已允许', 'success');
+                updateStatus('video-size', `${video.videoWidth}x${video.videoHeight}`, 'success');
+                
+                document.getElementById('start-camera').disabled = true;
+                document.getElementById('stop-camera').disabled = false;
+                
+                console.log('摄像头启动成功');
+            } catch (error) {
+                console.error('摄像头启动失败:', error);
+                updateStatus('camera-status', '启动失败', 'error');
+                updateStatus('permission-status', '权限被拒绝', 'error');
+                
+                if (error.name === 'NotAllowedError') {
+                    alert('摄像头权限被拒绝，请允许摄像头权限后重试');
+                } else if (error.name === 'NotFoundError') {
+                    alert('未找到摄像头设备');
+                } else {
+                    alert('摄像头启动失败: ' + error.message);
+                }
+            }
+        }
+        
+        // 停止摄像头
+        function stopCamera() {
+            if (video.srcObject) {
+                video.srcObject.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+            }
+            
+            isCameraRunning = false;
+            updateStatus('camera-status', '已停止', 'error');
+            updateStatus('permission-status', '未检查', 'error');
+            updateStatus('video-size', '未知', 'error');
+            
+            document.getElementById('start-camera').disabled = false;
+            document.getElementById('stop-camera').disabled = true;
+            
+            console.log('摄像头已停止');
+        }
+        
+        // 更新状态显示
+        function updateStatus(elementId, text, className) {
+            const element = document.getElementById(elementId);
+            element.textContent = text;
+            element.className = `status-value ${className}`;
+        }
+    </script>
+</body>
+</html>
