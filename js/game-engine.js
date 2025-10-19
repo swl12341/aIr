@@ -383,7 +383,7 @@ class GameEngine {
         let canvasX, canvasY;
         
         if (this.mirrorMode) {
-            // 镜像模式：修正X轴方向，使右手向右移动时飞船也向右移动
+            // 镜像模式：使方向与相机中的手势一致
             // 右手在相机右边 -> 飞船在游戏右边（直观映射）
             // 右手在相机左边 -> 飞船在游戏左边
             // 右手在相机上方 -> 飞船在游戏上方
@@ -391,9 +391,8 @@ class GameEngine {
             canvasX = Math.max(30, Math.min(this.canvas.width - 30, position.x * this.canvas.width));
             canvasY = Math.max(30, Math.min(this.canvas.height - 30, position.y * this.canvas.height));
         } else {
-            // 直接映射模式：修正X轴方向映射
-            // 使用 (1 - position.x) 来翻转X轴方向
-            canvasX = Math.max(30, Math.min(this.canvas.width - 30, (1 - position.x) * this.canvas.width));
+            // 直接映射模式：保持原始坐标
+            canvasX = Math.max(30, Math.min(this.canvas.width - 30, position.x * this.canvas.width));
             canvasY = Math.max(30, Math.min(this.canvas.height - 30, position.y * this.canvas.height));
         }
         
@@ -700,9 +699,9 @@ class GameEngine {
         
         // 更新提示信息
         if (this.mirrorMode) {
-            this.updatePrompt('✅ 镜像模式：右手向右移动时飞船向右移动');
+            this.updatePrompt('✅ 镜像模式：飞机移动方向与相机中的手势一致');
         } else {
-            this.updatePrompt('📐 直接映射模式：右手向右移动时飞船向右移动');
+            this.updatePrompt('📐 直接映射模式：飞机位置直接对应相机位置');
         }
         
         // 3秒后恢复原来的提示

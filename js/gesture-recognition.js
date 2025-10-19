@@ -531,15 +531,67 @@ class GestureRecognition {
     detectRightPalmCenter(hands, pose) {
         // 优先使用手势识别的手掌中心（更精确）
         if (hands && hands.length > 0) {
-            // 查找右手（通常右手是第二个检测到的手）
+            // 查找右手 - 使用更可靠的右手识别方法
             let rightHand = null;
             if (hands.length === 1) {
-                // 如果只检测到一只手，假设是右手
-                rightHand = hands[0];
+                // 如果只检测到一只手，需要结合姿态识别来判断是否是右手
+                if (pose && pose[16]) {
+                    // 使用姿态识别的右手腕位置来验证
+                    const poseRightWrist = pose[16];
+                    const handCenter = this.getHandCenter(hands[0]);
+                    
+                    // 计算手掌中心与右手腕的距离
+                    const distance = Math.sqrt(
+                        Math.pow(handCenter.x - poseRightWrist.x, 2) + 
+                        Math.pow(handCenter.y - poseRightWrist.y, 2)
+                    );
+                    
+                    // 如果距离很近，说明这是右手
+                    if (distance < 0.2) {
+                        rightHand = hands[0];
+                        console.log('检测到右手（单只手）');
+                    } else {
+                        console.log('检测到左手，忽略');
+                        return { x: 0.5, y: 0.5 }; // 返回默认位置
+                    }
+                } else {
+                    // 没有姿态信息时，假设是右手
+                    rightHand = hands[0];
+                    console.log('检测到单只手，假设是右手');
+                }
             } else if (hands.length === 2) {
-                // 如果有两只手，通过位置判断哪只是右手
-                // 右手通常在屏幕右侧（x坐标更大）
-                rightHand = hands[0].x > hands[1].x ? hands[0] : hands[1];
+                // 如果有两只手，通过位置和姿态识别来判断哪只是右手
+                if (pose && pose[16]) {
+                    const poseRightWrist = pose[16];
+                    let minDistance = Infinity;
+                    let rightHandIndex = -1;
+                    
+                    // 找到与右手腕距离最近的手
+                    for (let i = 0; i < hands.length; i++) {
+                        const handCenter = this.getHandCenter(hands[i]);
+                        const distance = Math.sqrt(
+                            Math.pow(handCenter.x - poseRightWrist.x, 2) + 
+                            Math.pow(handCenter.y - poseRightWrist.y, 2)
+                        );
+                        
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            rightHandIndex = i;
+                        }
+                    }
+                    
+                    if (rightHandIndex >= 0 && minDistance < 0.3) {
+                        rightHand = hands[rightHandIndex];
+                        console.log(`检测到右手（两只手中的第${rightHandIndex + 1}只）`);
+                    } else {
+                        console.log('无法确定哪只是右手，忽略');
+                        return { x: 0.5, y: 0.5 };
+                    }
+                } else {
+                    // 没有姿态信息时，通过位置判断（右手通常在屏幕右侧）
+                    rightHand = hands[0].x > hands[1].x ? hands[0] : hands[1];
+                    console.log('通过位置判断右手');
+                }
             }
             
             if (rightHand) {
