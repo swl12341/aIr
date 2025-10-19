@@ -383,16 +383,17 @@ class GameEngine {
         let canvasX, canvasY;
         
         if (this.mirrorMode) {
-            // 镜像模式：使方向与相机中的手势一致
-            // 右手在相机右边 -> 飞船在游戏右边（直观映射）
-            // 右手在相机左边 -> 飞船在游戏左边
-            // 右手在相机上方 -> 飞船在游戏上方
-            // 右手在相机下方 -> 飞船在游戏下方
+            // 镜像模式：修正X轴方向，使食指向右移动时飞船向右移动
+            // 食指向右 -> 飞船向右（直观映射）
+            // 食指向左 -> 飞船向左
+            // 食指向上 -> 飞船向上
+            // 食指向下 -> 飞船向下
             canvasX = Math.max(30, Math.min(this.canvas.width - 30, position.x * this.canvas.width));
             canvasY = Math.max(30, Math.min(this.canvas.height - 30, position.y * this.canvas.height));
         } else {
-            // 直接映射模式：保持原始坐标
-            canvasX = Math.max(30, Math.min(this.canvas.width - 30, position.x * this.canvas.width));
+            // 直接映射模式：修正X轴方向，使食指向右移动时飞船向右移动
+            // 使用 (1 - position.x) 来翻转X轴方向
+            canvasX = Math.max(30, Math.min(this.canvas.width - 30, (1 - position.x) * this.canvas.width));
             canvasY = Math.max(30, Math.min(this.canvas.height - 30, position.y * this.canvas.height));
         }
         
@@ -401,7 +402,7 @@ class GameEngine {
         
         // 调试信息：显示映射关系
         if (Math.floor(this.gameState.time * 10) % 30 === 0) {
-            console.log(`位置映射: 原始(${position.x.toFixed(3)}, ${position.y.toFixed(3)}) -> 画布(${canvasX.toFixed(1)}, ${canvasY.toFixed(1)}) [镜像模式: ${this.mirrorMode}]`);
+            console.log(`食指位置映射: 相机(${position.x.toFixed(3)}, ${position.y.toFixed(3)}) -> 飞船(${canvasX.toFixed(1)}, ${canvasY.toFixed(1)}) [镜像模式: ${this.mirrorMode}]`);
         }
         
         // 检查与陨石的碰撞
@@ -699,9 +700,9 @@ class GameEngine {
         
         // 更新提示信息
         if (this.mirrorMode) {
-            this.updatePrompt('✅ 镜像模式：飞机移动方向与相机中的手势一致');
+            this.updatePrompt('✅ 镜像模式：食指向右移动时飞船向右移动');
         } else {
-            this.updatePrompt('📐 直接映射模式：飞机位置直接对应相机位置');
+            this.updatePrompt('📐 直接映射模式：食指向右移动时飞船向右移动');
         }
         
         // 3秒后恢复原来的提示
