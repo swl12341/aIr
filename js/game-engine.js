@@ -383,17 +383,20 @@ class GameEngine {
         let canvasX, canvasY;
         
         if (this.mirrorMode) {
-            // 镜像模式：修正X轴方向，使食指向右移动时飞船向右移动
-            // 食指向右 -> 飞船向右（直观映射）
-            // 食指向左 -> 飞船向左
+            // 镜像模式：反转X轴方向，使食指向右移动时飞船向左移动
+            // 食指向右 -> 飞船向左（反转映射）
+            // 食指向左 -> 飞船向右
+            // 食指向上 -> 飞船向上
+            // 食指向下 -> 飞船向下
+            canvasX = Math.max(30, Math.min(this.canvas.width - 30, (1 - position.x) * this.canvas.width));
+            canvasY = Math.max(30, Math.min(this.canvas.height - 30, position.y * this.canvas.height));
+        } else {
+            // 直接映射模式：直接映射，使食指向右移动时飞船向左移动
+            // 食指向右 -> 飞船向左（反转映射）
+            // 食指向左 -> 飞船向右
             // 食指向上 -> 飞船向上
             // 食指向下 -> 飞船向下
             canvasX = Math.max(30, Math.min(this.canvas.width - 30, position.x * this.canvas.width));
-            canvasY = Math.max(30, Math.min(this.canvas.height - 30, position.y * this.canvas.height));
-        } else {
-            // 直接映射模式：修正X轴方向，使食指向右移动时飞船向右移动
-            // 使用 (1 - position.x) 来翻转X轴方向
-            canvasX = Math.max(30, Math.min(this.canvas.width - 30, (1 - position.x) * this.canvas.width));
             canvasY = Math.max(30, Math.min(this.canvas.height - 30, position.y * this.canvas.height));
         }
         
@@ -700,9 +703,9 @@ class GameEngine {
         
         // 更新提示信息
         if (this.mirrorMode) {
-            this.updatePrompt('✅ 镜像模式：食指向右移动时飞船向右移动');
+            this.updatePrompt('✅ 镜像模式：食指向右移动时飞船向左移动');
         } else {
-            this.updatePrompt('📐 直接映射模式：食指向右移动时飞船向右移动');
+            this.updatePrompt('📐 直接映射模式：食指向右移动时飞船向左移动');
         }
         
         // 3秒后恢复原来的提示
