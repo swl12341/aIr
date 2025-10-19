@@ -526,6 +526,64 @@ class GestureRecognition {
     }
 
     /**
+     * 检测右手手掌中心位置
+     */
+    detectRightPalmCenter(hands, pose) {
+        // 优先使用手势识别的手掌中心（更精确）
+        if (hands && hands.length > 0) {
+            // 查找右手（通常右手是第二个检测到的手）
+            let rightHand = null;
+            if (hands.length === 1) {
+                // 如果只检测到一只手，假设是右手
+                rightHand = hands[0];
+            } else if (hands.length === 2) {
+                // 如果有两只手，通过位置判断哪只是右手
+                // 右手通常在屏幕右侧（x坐标更大）
+                rightHand = hands[0].x > hands[1].x ? hands[0] : hands[1];
+            }
+            
+            if (rightHand) {
+                const palmCenter = this.getHandCenter(rightHand);
+                
+                // 添加平滑处理
+                if (!this.lastRightPalmPosition) {
+                    this.lastRightPalmPosition = { x: palmCenter.x, y: palmCenter.y };
+                }
+                
+                const smoothingFactor = 0.4;
+                const smoothedX = this.lastRightPalmPosition.x + (palmCenter.x - this.lastRightPalmPosition.x) * smoothingFactor;
+                const smoothedY = this.lastRightPalmPosition.y + (palmCenter.y - this.lastRightPalmPosition.y) * smoothingFactor;
+                
+                this.lastRightPalmPosition = { x: smoothedX, y: smoothedY };
+                
+                console.log(`右手手掌中心: x=${smoothedX.toFixed(3)}, y=${smoothedY.toFixed(3)}`);
+                return { x: smoothedX, y: smoothedY };
+            }
+        }
+        
+        // 如果手势识别失败，回退到姿态识别的手腕位置
+        if (pose && pose[16]) {
+            const rightWrist = pose[16];
+            
+            if (!this.lastRightPalmPosition) {
+                this.lastRightPalmPosition = { x: rightWrist.x, y: rightWrist.y };
+            }
+            
+            const smoothingFactor = 0.3;
+            const smoothedX = this.lastRightPalmPosition.x + (rightWrist.x - this.lastRightPalmPosition.x) * smoothingFactor;
+            const smoothedY = this.lastRightPalmPosition.y + (rightWrist.y - this.lastRightPalmPosition.y) * smoothingFactor;
+            
+            this.lastRightPalmPosition = { x: smoothedX, y: smoothedY };
+            
+            console.log(`右手手腕位置（回退）: x=${smoothedX.toFixed(3)}, y=${smoothedY.toFixed(3)}`);
+            return { x: smoothedX, y: smoothedY };
+        }
+        
+        // 如果都检测不到，返回默认位置
+        return { x: 0.5, y: 0.5 };
+    }
+
+    /**
      * 检测身体移动
      */
     detectBodyMovement(pose) {
