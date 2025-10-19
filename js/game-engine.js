@@ -234,7 +234,7 @@ class GameEngine {
                 this.updatePrompt('请将手伸向屏幕启动飞船');
                 break;
             case 'avoid_asteroids':
-                this.updatePrompt('移动右手手掌中心控制飞船位置，避开陨石！');
+                this.updatePrompt('移动右手食指指尖控制飞船位置，避开陨石！');
                 // 只在飞船位置完全无效时才初始化到屏幕中央
                 if (!this.spaceshipPosition.x || this.spaceshipPosition.x === 0) {
                     this.spaceshipPosition = { x: this.canvas.width / 2, y: this.canvas.height / 2 };
@@ -327,12 +327,12 @@ class GameEngine {
         // 获取当前检测到的手部数据
         const currentHands = this.gestureRecognition.currentGestures.hands;
         
-        // 使用手掌中心位置（更精确）
-        const rightPalmPosition = this.gestureRecognition.detectRightPalmCenter(currentHands, pose);
+        // 使用食指指尖位置（更精确的控制）
+        const rightIndexPosition = this.gestureRecognition.detectRightIndexFinger(currentHands, pose);
         
         // 只在检测到有效位置时更新玩家位置
-        if (rightPalmPosition && rightPalmPosition.x !== 0.5 && rightPalmPosition.y !== 0.5) {
-            this.updatePlayerPosition(rightPalmPosition);
+        if (rightIndexPosition && rightIndexPosition.x !== 0.5 && rightIndexPosition.y !== 0.5) {
+            this.updatePlayerPosition(rightIndexPosition);
             
             if (phase === 'avoid_asteroids') {
                 // 安全地更新右手状态，避免DOM错误
@@ -343,8 +343,8 @@ class GameEngine {
                 }
             }
         } else {
-            // 没有检测到右手时，飞船保持静止（不更新位置）
-            console.log('未检测到右手手掌中心，飞船保持静止');
+            // 没有检测到右手食指时，飞船保持静止（不更新位置）
+            console.log('未检测到右手食指指尖，飞船保持静止');
         }
     }
 
@@ -707,7 +707,7 @@ class GameEngine {
         // 3秒后恢复原来的提示
         setTimeout(() => {
             if (this.gamePhases[this.currentPhase] === 'avoid_asteroids') {
-                this.updatePrompt('移动右手手掌中心控制飞船位置，避开陨石！');
+                this.updatePrompt('移动右手食指指尖控制飞船位置，避开陨石！');
             }
         }, 3000);
     }
@@ -935,13 +935,13 @@ class GameEngine {
         }
         
         if (this.gamePhases[this.currentPhase] === 'avoid_asteroids') {
-            // 在避开陨石阶段，飞船跟随右手手掌中心位置
+            // 在避开陨石阶段，飞船跟随右手食指指尖位置
             if (this.playerPosition && this.playerPosition.x > 0) {
                 centerX = this.playerPosition.x;
                 centerY = this.playerPosition.y;
                 this.spaceshipPosition = { x: centerX, y: centerY };
                 if (Math.floor(this.gameState.time * 10) % 30 === 0) {
-                    console.log(`飞船位置 (跟随右手手掌中心): X:${centerX.toFixed(1)}, Y:${centerY.toFixed(1)}`);
+                    console.log(`飞船位置 (跟随右手食指指尖): X:${centerX.toFixed(1)}, Y:${centerY.toFixed(1)}`);
                 }
             } else {
                 // 没有检测到右手时，飞船保持静止（使用最后位置）
@@ -1128,7 +1128,7 @@ class GameEngine {
             // 绘制飞船位置文字
             this.ctx.fillStyle = '#ffffff';
             this.ctx.font = '14px Arial';
-            this.ctx.fillText(`飞船(手掌中心): ${testX.toFixed(0)}, ${testY.toFixed(0)}`, testX + 20, testY - 20);
+            this.ctx.fillText(`飞船(食指指尖): ${testX.toFixed(0)}, ${testY.toFixed(0)}`, testX + 20, testY - 20);
             
             this.ctx.restore();
         }

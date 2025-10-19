@@ -526,7 +526,112 @@ class GestureRecognition {
     }
 
     /**
-     * 检测右手手掌中心位置
+     * 检测右手食指指尖位置
+     */
+    detectRightIndexFinger(hands, pose) {
+        // 优先使用手势识别检测食指指尖
+        if (hands && hands.length > 0) {
+            // 查找右手
+            let rightHand = null;
+            if (hands.length === 1) {
+                // 如果只检测到一只手，需要结合姿态识别来判断是否是右手
+                if (pose && pose[16]) {
+                    const poseRightWrist = pose[16];
+                    const handCenter = this.getHandCenter(hands[0]);
+                    
+                    const distance = Math.sqrt(
+                        Math.pow(handCenter.x - poseRightWrist.x, 2) + 
+                        Math.pow(handCenter.y - poseRightWrist.y, 2)
+                    );
+                    
+                    if (distance < 0.2) {
+                        rightHand = hands[0];
+                        console.log('检测到右手（单只手）');
+                    } else {
+                        console.log('检测到左手，忽略');
+                        return { x: 0.5, y: 0.5 };
+                    }
+                } else {
+                    rightHand = hands[0];
+                    console.log('检测到单只手，假设是右手');
+                }
+            } else if (hands.length === 2) {
+                // 如果有两只手，通过位置和姿态识别来判断哪只是右手
+                if (pose && pose[16]) {
+                    const poseRightWrist = pose[16];
+                    let minDistance = Infinity;
+                    let rightHandIndex = -1;
+                    
+                    for (let i = 0; i < hands.length; i++) {
+                        const handCenter = this.getHandCenter(hands[i]);
+                        const distance = Math.sqrt(
+                            Math.pow(handCenter.x - poseRightWrist.x, 2) + 
+                            Math.pow(handCenter.y - poseRightWrist.y, 2)
+                        );
+                        
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            rightHandIndex = i;
+                        }
+                    }
+                    
+                    if (rightHandIndex >= 0 && minDistance < 0.3) {
+                        rightHand = hands[rightHandIndex];
+                        console.log(`检测到右手（两只手中的第${rightHandIndex + 1}只）`);
+                    } else {
+                        console.log('无法确定哪只是右手，忽略');
+                        return { x: 0.5, y: 0.5 };
+                    }
+                } else {
+                    rightHand = hands[0].x > hands[1].x ? hands[0] : hands[1];
+                    console.log('通过位置判断右手');
+                }
+            }
+            
+            if (rightHand) {
+                // 使用食指指尖位置（landmark 8）
+                const indexFinger = rightHand[8];
+                
+                // 添加平滑处理
+                if (!this.lastRightIndexPosition) {
+                    this.lastRightIndexPosition = { x: indexFinger.x, y: indexFinger.y };
+                }
+                
+                const smoothingFactor = 0.4;
+                const smoothedX = this.lastRightIndexPosition.x + (indexFinger.x - this.lastRightIndexPosition.x) * smoothingFactor;
+                const smoothedY = this.lastRightIndexPosition.y + (indexFinger.y - this.lastRightIndexPosition.y) * smoothingFactor;
+                
+                this.lastRightIndexPosition = { x: smoothedX, y: smoothedY };
+                
+                console.log(`右手食指指尖: x=${smoothedX.toFixed(3)}, y=${smoothedY.toFixed(3)}`);
+                return { x: smoothedX, y: smoothedY };
+            }
+        }
+        
+        // 如果手势识别失败，回退到姿态识别的手腕位置
+        if (pose && pose[16]) {
+            const rightWrist = pose[16];
+            
+            if (!this.lastRightIndexPosition) {
+                this.lastRightIndexPosition = { x: rightWrist.x, y: rightWrist.y };
+            }
+            
+            const smoothingFactor = 0.3;
+            const smoothedX = this.lastRightIndexPosition.x + (rightWrist.x - this.lastRightIndexPosition.x) * smoothingFactor;
+            const smoothedY = this.lastRightIndexPosition.y + (rightWrist.y - this.lastRightIndexPosition.y) * smoothingFactor;
+            
+            this.lastRightIndexPosition = { x: smoothedX, y: smoothedY };
+            
+            console.log(`右手手腕位置（回退）: x=${smoothedX.toFixed(3)}, y=${smoothedY.toFixed(3)}`);
+            return { x: smoothedX, y: smoothedY };
+        }
+        
+        // 如果都检测不到，返回默认位置
+        return { x: 0.5, y: 0.5 };
+    }
+
+    /**
+     * 检测右手手掌中心位置（保留原方法作为备用）
      */
     detectRightPalmCenter(hands, pose) {
         // 优先使用手势识别的手掌中心（更精确）
