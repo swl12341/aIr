@@ -38,7 +38,7 @@ class GameEngine {
         this.currentPhase = 0;
         this.phaseStartTime = 0;
         this.asteroids = [];
-        this.asteroidSpawnRate = 0.05; // 增加陨石生成率
+        this.asteroidSpawnRate = 0.08; // 进一步增加陨石生成率
         this.playerPosition = { x: 0, y: 0 };
         this.spaceshipPosition = { x: 0, y: 0 }; // 飞船位置缓存
         this.difficultyLevel = 1;
@@ -455,7 +455,7 @@ class GameEngine {
      */
     startAsteroidField() {
         this.asteroids = [];
-        this.asteroidSpawnRate = 0.05; // 增加陨石生成率
+        this.asteroidSpawnRate = 0.08; // 进一步增加陨石生成率
         
         // 只在飞船位置完全无效时才重置到屏幕中央
         if (!this.playerPosition || this.playerPosition.x === 0) {
@@ -512,10 +512,10 @@ class GameEngine {
         let x, y, vx, vy;
         
         // 根据难度等级调整陨石速度
-        const baseSpeed = 4; // 增加基础速度
+        const baseSpeed = 5; // 进一步增加基础速度
         const speedMultiplier = 1 + (this.difficultyLevel - 1) * 0.3; // 每级增加30%速度
         const minSpeed = baseSpeed * speedMultiplier;
-        const maxSpeed = (baseSpeed + 4) * speedMultiplier; // 增加最大速度
+        const maxSpeed = (baseSpeed + 5) * speedMultiplier; // 进一步增加最大速度
         
         switch (side) {
             case 0: // 从左边进入
@@ -632,7 +632,7 @@ class GameEngine {
         this.difficultyLevel++;
         
         // 增加陨石生成率（每级增加30%）
-        this.asteroidSpawnRate = Math.min(0.25, this.asteroidSpawnRate * 1.3);
+        this.asteroidSpawnRate = Math.min(0.35, this.asteroidSpawnRate * 1.3);
         
         // 不修改阶段超时时间，保持原有时间
         // Object.keys(this.phaseTimeouts).forEach(phase => {
