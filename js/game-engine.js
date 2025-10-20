@@ -1084,10 +1084,11 @@ class GameEngine {
     }
 
     /**
-     * 渲染位置映射指示器
+     * 渲染位置映射指示器（已禁用虚线）
      */
     renderPositionMapping() {
-        if (this.gamePhases[this.currentPhase] === 'avoid_asteroids' && this.playerPosition) {
+        // 虚线功能已移除，保持函数结构以便将来扩展
+        if (false) { // 禁用虚线绘制
             this.ctx.save();
             
             // 绘制从摄像头位置到游戏位置的连接线
