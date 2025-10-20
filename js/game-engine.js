@@ -173,6 +173,9 @@ class GameEngine {
         this.lastUpdateTime = Date.now(); // 初始化时间基准
         this.currentPhase = 0;
         
+        // 清除能量警告
+        this.hideEnergyWarning();
+        
         // 启动摄像头和手势识别
         try {
             await this.gestureRecognition.start();
@@ -219,6 +222,9 @@ class GameEngine {
         this.gameState.isPaused = false;
         this.switchScene('start');
         this.audioManager.stopBackgroundMusic();
+        
+        // 清除能量警告
+        this.hideEnergyWarning();
     }
 
     /**
@@ -522,6 +528,16 @@ class GameEngine {
                     warningElement.style.display = 'none';
                 }
             }, 3000);
+        }
+    }
+
+    /**
+     * 隐藏能量警告
+     */
+    hideEnergyWarning() {
+        const warningElement = document.getElementById('energy-warning');
+        if (warningElement) {
+            warningElement.style.display = 'none';
         }
     }
 
