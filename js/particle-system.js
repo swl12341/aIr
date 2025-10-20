@@ -40,11 +40,13 @@ class ParticleSystem {
      * 创建爆炸效果
      */
     createExplosionEffect(x, y, intensity = 1) {
-        const particleCount = Math.floor(50 * intensity);
+        // 大幅增加粒子数量，让爆炸更壮观
+        const particleCount = Math.floor(120 * intensity);
         
         for (let i = 0; i < particleCount; i++) {
             const angle = (Math.PI * 2 * i) / particleCount;
-            const speed = 2 + Math.random() * 4;
+            // 增加爆炸速度，让粒子飞得更远
+            const speed = 4 + Math.random() * 8;
             
             const particle = {
                 x: x,
@@ -52,12 +54,42 @@ class ParticleSystem {
                 vx: Math.cos(angle) * speed,
                 vy: Math.sin(angle) * speed,
                 life: 1.0,
-                decay: 0.03 + Math.random() * 0.02,
-                size: 3 + Math.random() * 6,
+                // 减慢衰减速度，让爆炸持续更久
+                decay: 0.015 + Math.random() * 0.01,
+                // 增大粒子尺寸，让爆炸更明显
+                size: 5 + Math.random() * 12,
                 color: this.getExplosionColor(),
                 type: 'explosion'
             };
             this.effects.explosion.push(particle);
+        }
+        
+        // 添加额外的火花效果
+        this.createSparkEffect(x, y, intensity);
+    }
+
+    /**
+     * 创建火花效果
+     */
+    createSparkEffect(x, y, intensity = 1) {
+        const sparkCount = Math.floor(30 * intensity);
+        
+        for (let i = 0; i < sparkCount; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = 6 + Math.random() * 10;
+            
+            const spark = {
+                x: x,
+                y: y,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                life: 1.0,
+                decay: 0.02 + Math.random() * 0.015,
+                size: 2 + Math.random() * 4,
+                color: this.getSparkColor(),
+                type: 'spark'
+            };
+            this.effects.explosion.push(spark);
         }
     }
 
@@ -224,10 +256,46 @@ class ParticleSystem {
         this.effects.explosion.forEach(particle => {
             ctx.save();
             ctx.globalAlpha = particle.life;
-            ctx.fillStyle = particle.color;
-            ctx.beginPath();
-            ctx.arc(particle.x, particle.y, particle.size * particle.life, 0, Math.PI * 2);
-            ctx.fill();
+            
+            // 添加发光效果
+            ctx.shadowColor = particle.color;
+            ctx.shadowBlur = particle.size * 2 * particle.life;
+            
+            // 根据粒子类型设置不同的渲染效果
+            if (particle.type === 'spark') {
+                // 火花效果：更亮更小
+                ctx.fillStyle = particle.color;
+                ctx.beginPath();
+                ctx.arc(particle.x, particle.y, particle.size * particle.life * 0.8, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 添加火花尾巴效果
+                ctx.strokeStyle = particle.color;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(particle.x, particle.y);
+                ctx.lineTo(
+                    particle.x - particle.vx * 0.5, 
+                    particle.y - particle.vy * 0.5
+                );
+                ctx.stroke();
+            } else {
+                // 爆炸效果：更大更亮
+                ctx.fillStyle = particle.color;
+                ctx.beginPath();
+                ctx.arc(particle.x, particle.y, particle.size * particle.life, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 添加爆炸光环效果
+                if (particle.life > 0.5) {
+                    ctx.globalAlpha = particle.life * 0.3;
+                    ctx.fillStyle = particle.color;
+                    ctx.beginPath();
+                    ctx.arc(particle.x, particle.y, particle.size * particle.life * 1.5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            
             ctx.restore();
         });
 
@@ -256,6 +324,14 @@ class ParticleSystem {
      */
     getExplosionColor() {
         const colors = ['#ff6600', '#ff9900', '#ffcc00', '#ffffff'];
+        return colors[Math.floor(Math.random() * colors.length)];
+    }
+
+    /**
+     * 获取火花颜色
+     */
+    getSparkColor() {
+        const colors = ['#ffaa00', '#ffcc00', '#ffff00', '#ffffff', '#ff8800'];
         return colors[Math.floor(Math.random() * colors.length)];
     }
 
