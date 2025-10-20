@@ -156,6 +156,7 @@ class GameEngine {
         this.gameState.score = 0;
         this.gameState.energy = 100;
         this.gameState.progress = 0;
+        this.lastUpdateTime = Date.now(); // 初始化时间基准
         this.currentPhase = 0;
         
         // 启动摄像头和手势识别
@@ -772,7 +773,13 @@ class GameEngine {
      * 更新游戏状态
      */
     updateGameState() {
-        this.gameState.time += 1/60; // 假设60FPS
+        // 使用实际的时间差而不是假设60FPS
+        const currentTime = Date.now();
+        if (this.lastUpdateTime) {
+            const deltaTime = (currentTime - this.lastUpdateTime) / 1000; // 转换为秒
+            this.gameState.time += deltaTime;
+        }
+        this.lastUpdateTime = currentTime;
         
         // 检查阶段超时
         this.checkPhaseTimeout();
