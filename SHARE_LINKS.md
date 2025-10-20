@@ -1,4 +1,4 @@
-# 🎮 冰脉回航 - 分享链接
+# 🎮 天穹计划 - 分享链接
 
 ## 📱 在线演示链接
 
@@ -21,7 +21,7 @@
 
 ### 给朋友分享
 ```
-🎮 冰脉回航：Echo of the Last Sky
+🎮 天穹计划：Project Celestial
 一个基于手势识别的体感游戏
 
 🌐 在线体验：https://swl12341.github.io/aIr/
