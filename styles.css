@@ -458,3 +458,84 @@ body {
     margin-bottom: 8px;
 }
 
+/* 成就系统样式 */
+.achievements-section {
+    margin: 20px 0;
+    padding: 20px;
+    background: rgba(0, 50, 100, 0.3);
+    border-radius: 15px;
+    border: 1px solid rgba(0, 212, 255, 0.4);
+}
+
+.achievements-section h3 {
+    color: #00d4ff;
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+.achievements-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.achievement-item {
+    background: rgba(0, 212, 255, 0.1);
+    padding: 10px 15px;
+    border-radius: 8px;
+    border-left: 4px solid #00d4ff;
+    color: #ffffff;
+    font-size: 14px;
+    text-align: left;
+    animation: achievement-glow 2s ease-in-out;
+}
+
+/* 失败原因样式 */
+.failure-reason {
+    margin: 20px 0;
+    padding: 20px;
+    background: rgba(255, 0, 0, 0.1);
+    border-radius: 15px;
+    border: 1px solid rgba(255, 0, 0, 0.4);
+}
+
+.failure-reason h3 {
+    color: #ff4444;
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
+.failure-reason p {
+    color: #ff6666;
+    font-size: 16px;
+    margin: 0;
+}
+
+/* 能量警告动画 */
+@keyframes pulse-warning {
+    0%, 100% { 
+        transform: translateX(-50%) scale(1);
+        opacity: 0.9;
+    }
+    50% { 
+        transform: translateX(-50%) scale(1.05);
+        opacity: 1;
+    }
+}
+
+/* 成就发光动画 */
+@keyframes achievement-glow {
+    0% { 
+        background: rgba(0, 212, 255, 0.1);
+        box-shadow: 0 0 5px rgba(0, 212, 255, 0.3);
+    }
+    50% { 
+        background: rgba(0, 212, 255, 0.2);
+        box-shadow: 0 0 15px rgba(0, 212, 255, 0.6);
+    }
+    100% { 
+        background: rgba(0, 212, 255, 0.1);
+        box-shadow: 0 0 5px rgba(0, 212, 255, 0.3);
+    }
+}
+

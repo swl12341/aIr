@@ -17,7 +17,21 @@ class GameEngine {
             score: 0,
             time: 0,
             energy: 100,
-            progress: 0
+            progress: 0,
+            isFailed: false,
+            failureReason: '',
+            achievements: {
+                perfectSurvival: false,
+                speedRun: false,
+                energyMaster: false,
+                asteroidHunter: false
+            },
+            stats: {
+                totalCollisions: 0,
+                energyDrained: 0,
+                asteroidsAvoided: 0,
+                perfectPhases: 0
+            }
         };
         
         this.scenes = {
@@ -443,11 +457,71 @@ class GameEngine {
      */
     handleCollision(asteroid) {
         this.gameState.energy -= 10;
+        this.gameState.stats.totalCollisions++;
         this.audioManager.playCollision();
         this.particleSystem.createExplosionEffect(asteroid.x, asteroid.y);
         
+        // 检查能量警告
+        this.checkEnergyWarning();
+        
         if (this.gameState.energy <= 0) {
+            this.gameState.isFailed = true;
+            this.gameState.failureReason = '能量耗尽';
             this.gameOver();
+        }
+    }
+
+    /**
+     * 检查能量警告
+     */
+    checkEnergyWarning() {
+        if (this.gameState.energy <= 20 && this.gameState.energy > 0) {
+            this.showEnergyWarning();
+        }
+    }
+
+    /**
+     * 显示能量警告
+     */
+    showEnergyWarning() {
+        // 创建或更新能量警告元素
+        let warningElement = document.getElementById('energy-warning');
+        if (!warningElement) {
+            warningElement = document.createElement('div');
+            warningElement.id = 'energy-warning';
+            warningElement.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(255, 0, 0, 0.9);
+                color: white;
+                padding: 15px 30px;
+                border-radius: 10px;
+                font-size: 18px;
+                font-weight: bold;
+                z-index: 1000;
+                animation: pulse-warning 1s infinite;
+                text-align: center;
+                box-shadow: 0 4px 20px rgba(255, 0, 0, 0.5);
+            `;
+            document.body.appendChild(warningElement);
+        }
+        
+        if (this.gameState.energy <= 0) {
+            warningElement.textContent = '能量耗尽，任务失败！';
+            warningElement.style.background = 'rgba(255, 0, 0, 1)';
+        } else {
+            warningElement.textContent = `能量不足！剩余：${this.gameState.energy}%`;
+        }
+        
+        // 3秒后隐藏警告（除非能量为0）
+        if (this.gameState.energy > 0) {
+            setTimeout(() => {
+                if (warningElement && this.gameState.energy > 20) {
+                    warningElement.style.display = 'none';
+                }
+            }, 3000);
         }
     }
 
@@ -668,9 +742,61 @@ class GameEngine {
     gameOver() {
         this.gameState.isPlaying = false;
         this.audioManager.stopBackgroundMusic();
+        
+        // 检查成就
+        this.checkAchievements();
+        
+        // 更新结果统计
+        this.updateResultStats();
+        
         this.switchScene('result');
     }
 
+
+    /**
+     * 检查成就
+     */
+    checkAchievements() {
+        // 完美生还：在所有阶段避免任何碰撞或能量耗尽
+        if (this.gameState.stats.totalCollisions === 0 && !this.gameState.isFailed) {
+            this.gameState.achievements.perfectSurvival = true;
+        }
+        
+        // 极速飞行：在规定时间内完成所有任务（假设总时间少于60秒）
+        if (this.gameState.time < 60 && !this.gameState.isFailed) {
+            this.gameState.achievements.speedRun = true;
+        }
+        
+        // 能量大师：在不出现任何能量耗尽或溢出的情况下完成游戏
+        if (this.gameState.energy >= 50 && !this.gameState.isFailed) {
+            this.gameState.achievements.energyMaster = true;
+        }
+        
+        // 陨石猎人：避开所有陨石并且完成任务
+        if (this.gameState.stats.totalCollisions === 0 && !this.gameState.isFailed) {
+            this.gameState.achievements.asteroidHunter = true;
+        }
+        
+        // 输出成就信息
+        this.logAchievements();
+    }
+
+    /**
+     * 记录成就
+     */
+    logAchievements() {
+        const achievements = this.gameState.achievements;
+        const newAchievements = [];
+        
+        if (achievements.perfectSurvival) newAchievements.push('🏆 完美生还');
+        if (achievements.speedRun) newAchievements.push('⚡ 极速飞行');
+        if (achievements.energyMaster) newAchievements.push('⚡ 能量大师');
+        if (achievements.asteroidHunter) newAchievements.push('🎯 陨石猎人');
+        
+        if (newAchievements.length > 0) {
+            console.log('🎉 获得成就：', newAchievements.join(', '));
+        }
+    }
 
     /**
      * 更新右手位置显示
@@ -728,8 +854,58 @@ class GameEngine {
      * 更新结果统计
      */
     updateResultStats() {
+        // 更新基本统计
         document.getElementById('final-time').textContent = this.formatTime(this.gameState.time);
         document.getElementById('energy-efficiency').textContent = `${this.gameState.energy}%`;
+        document.getElementById('collision-count').textContent = this.gameState.stats.totalCollisions;
+        
+        // 更新标题
+        const resultTitle = document.getElementById('result-title');
+        if (this.gameState.isFailed) {
+            resultTitle.textContent = '任务失败';
+            resultTitle.style.color = '#ff4444';
+        } else {
+            resultTitle.textContent = '任务完成';
+            resultTitle.style.color = '#44ff44';
+        }
+        
+        // 显示失败原因
+        const failureReason = document.getElementById('failure-reason');
+        const failureText = document.getElementById('failure-text');
+        if (this.gameState.isFailed) {
+            failureReason.style.display = 'block';
+            failureText.textContent = this.gameState.failureReason;
+        } else {
+            failureReason.style.display = 'none';
+        }
+        
+        // 显示成就
+        this.displayAchievements();
+    }
+
+    /**
+     * 显示成就
+     */
+    displayAchievements() {
+        const achievementsSection = document.getElementById('achievements-section');
+        const achievementsList = document.getElementById('achievements-list');
+        
+        const achievements = this.gameState.achievements;
+        const achievedList = [];
+        
+        if (achievements.perfectSurvival) achievedList.push('🏆 完美生还：在所有阶段避免任何碰撞或能量耗尽');
+        if (achievements.speedRun) achievedList.push('⚡ 极速飞行：在规定时间内完成所有任务');
+        if (achievements.energyMaster) achievedList.push('⚡ 能量大师：保持高能量完成游戏');
+        if (achievements.asteroidHunter) achievedList.push('🎯 陨石猎人：避开所有陨石并且完成任务');
+        
+        if (achievedList.length > 0) {
+            achievementsSection.style.display = 'block';
+            achievementsList.innerHTML = achievedList.map(achievement => 
+                `<div class="achievement-item">${achievement}</div>`
+            ).join('');
+        } else {
+            achievementsSection.style.display = 'none';
+        }
     }
 
     /**

@@ -77,7 +77,7 @@
         <!-- 结算界面 -->
         <div id="result-screen" class="screen">
             <div class="result-container">
-                <h2 class="result-title">任务完成</h2>
+                <h2 id="result-title" class="result-title">任务完成</h2>
                 <div class="result-stats">
                     <div class="stat-item">
                         <span class="stat-label">完成时间</span>
@@ -87,6 +87,18 @@
                         <span class="stat-label">能量效率</span>
                         <span id="energy-efficiency" class="stat-value">100%</span>
                     </div>
+                    <div class="stat-item">
+                        <span class="stat-label">碰撞次数</span>
+                        <span id="collision-count" class="stat-value">0</span>
+                    </div>
+                </div>
+                <div id="achievements-section" class="achievements-section" style="display: none;">
+                    <h3>🏆 获得成就</h3>
+                    <div id="achievements-list" class="achievements-list"></div>
+                </div>
+                <div id="failure-reason" class="failure-reason" style="display: none;">
+                    <h3>❌ 失败原因</h3>
+                    <p id="failure-text"></p>
                 </div>
                 <button id="restart-btn" class="restart-button">重新开始</button>
             </div>
